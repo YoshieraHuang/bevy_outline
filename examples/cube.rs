@@ -23,11 +23,6 @@ fn setup(
 ) {
     let translation = Vec3::new(0.0, 0.5, 0.0);
     let radius = translation.length();
-    // commands.spawn_bundle(PbrBundle {
-    //     mesh: meshes.add(Mesh::from(shape::Plane { size: 5.0 })),
-    //     material: materials.add(Color::rgb(0.3, 0.5, 0.3).into()),
-    //     ..default()
-    // });
     // cube
     commands
         .spawn_bundle(PbrBundle {
@@ -36,7 +31,6 @@ fn setup(
             transform: Transform::from_translation(translation),
             ..default()
         })
-        // This enables wireframe drawing on this entity
         .insert(outlines.add(OutlineMaterial {
             width: 5.,
             color: Color::rgba(0.2, 0.3, 0.4, 1.0),
