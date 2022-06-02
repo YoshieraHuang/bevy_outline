@@ -3,7 +3,7 @@ name = "bevy_outline"
 description = "Pixel-Perfect Outline Shader for Bevy"
 homepage = "https://github.com/YoshieraHuang/bevy_outline"
 repository = "https://github.com/YoshieraHuang/bevy_outline"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "MIT"
 keywords = ["bevy", "shader"]
@@ -12,14 +12,14 @@ categories = [ "game-development" ]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-bevy = { version = "0.7", default-features = false, features = [
+bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-features = false, features = [
     "bevy_render",
     "bevy_core_pipeline",
-    "bevy_pbr",
+    "bevy_pbr"
 ]}
 wgpu-types = "0.12.0"
 ordered-float = "2.0"
 
 [dev-dependencies]
-bevy = { version = "0.7", features = [ "dynamic" ]}
-bevy_obj = "0.7.0"
+bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", features = [ "dynamic" ]}
+# bevy_obj = "0.7.0"

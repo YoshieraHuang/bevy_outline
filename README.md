@@ -60,6 +60,7 @@ See [`Example`](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1/examples
 
 - [x] ~~the width of outliner seems not to be uniform.~~
 - [ ] outline of built-in torus seems weird (algorithm is wrong and will be fixed in 0.8)
+- [ ] Pan + Orbit camera in example does not work with `main` branch
 
 # Bevy Version Support
 

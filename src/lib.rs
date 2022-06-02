@@ -5,7 +5,7 @@ mod smooth_normal;
 mod window_size;
 
 use bevy::{
-    core_pipeline::Opaque3d,
+    core_pipeline::core_3d::Opaque3d,
     ecs::system::{
         lifetimeless::{Read, SQuery, SRes},
         SystemParamItem,
@@ -17,22 +17,21 @@ use bevy::{
     prelude::*,
     reflect::TypeUuid,
     render::{
+        extract_component::ExtractComponentPlugin,
         mesh::{MeshVertexAttribute, MeshVertexBufferLayout},
         render_asset::{PrepareAssetError, RenderAsset, RenderAssetPlugin, RenderAssets},
-        render_component::ExtractComponentPlugin,
         render_phase::{
             AddRenderCommand, DrawFunctions, EntityRenderCommand, RenderCommandResult, RenderPhase,
             SetItemPipeline, TrackedRenderPass,
         },
         render_resource::{
-            std140::{AsStd140, Std140},
-            BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
+            encase, BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
             BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BlendState,
-            BufferBindingType, BufferDescriptor, BufferInitDescriptor, BufferSize, CompareFunction,
+            BufferBindingType, BufferDescriptor, BufferInitDescriptor, CompareFunction,
             DepthBiasState, DepthStencilState, Face, FragmentState, FrontFace, MultisampleState,
-            PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor, ShaderStages,
-            SpecializedMeshPipeline, SpecializedMeshPipelineError, SpecializedMeshPipelines,
-            StencilFaceState, StencilState, TextureFormat, VertexState,
+            PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor, ShaderSize,
+            ShaderStages, ShaderType, SpecializedMeshPipeline, SpecializedMeshPipelineError,
+            SpecializedMeshPipelines, StencilFaceState, StencilState, TextureFormat, VertexState,
         },
         renderer::RenderDevice,
         texture::BevyDefault,
@@ -79,7 +78,7 @@ impl Plugin for OutlinePlugin {
         let render_device = app.world.resource::<RenderDevice>();
         let buffer = render_device.create_buffer(&BufferDescriptor {
             label: Some("window size uniform buffer"),
-            size: DoubleReciprocalWindowSizeUniform::std140_size_static() as u64,
+            size: DoubleReciprocalWindowSizeUniform::SIZE.get(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -113,7 +112,7 @@ pub struct OutlineMaterial {
     pub color: Color,
 }
 
-#[derive(AsStd140)]
+#[derive(ShaderType)]
 struct OutlineMaterialUniform {
     width: f32,
     color: Vec4,
@@ -141,10 +140,14 @@ impl RenderAsset for OutlineMaterial {
             color: extracted_asset.color.as_linear_rgba_f32().into(),
         };
 
+        let byte_buffer = [0u8; OutlineMaterialUniform::SIZE.get() as usize];
+        let mut buffer = encase::UniformBuffer::new(byte_buffer);
+        buffer.write(&uniform).unwrap();
+
         let buffer = render_device.create_buffer_with_data(&BufferInitDescriptor {
             label: None,
-            contents: uniform.as_std140().as_bytes(),
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
+            contents: buffer.as_ref(),
         });
 
         let bind_group = render_device.create_bind_group(&BindGroupDescriptor {
@@ -176,7 +179,7 @@ impl FromWorld for OutlinePipeline {
             ty: BindingType::Buffer {
                 ty: BufferBindingType::Uniform,
                 has_dynamic_offset: true,
-                min_binding_size: BufferSize::new(MeshUniform::std140_size_static() as u64),
+                min_binding_size: Some(MeshUniform::min_size()),
             },
             count: None,
         };
@@ -196,9 +199,7 @@ impl FromWorld for OutlinePipeline {
                 ty: BindingType::Buffer {
                     ty: BufferBindingType::Uniform,
                     has_dynamic_offset: false,
-                    min_binding_size: BufferSize::new(
-                        OutlineMaterialUniform::std140_size_static() as u64
-                    ),
+                    min_binding_size: Some(OutlineMaterialUniform::min_size()),
                 },
                 count: None,
             }],
@@ -213,9 +214,7 @@ impl FromWorld for OutlinePipeline {
                     ty: BindingType::Buffer {
                         ty: BufferBindingType::Uniform,
                         has_dynamic_offset: false,
-                        min_binding_size: BufferSize::new(
-                            DoubleReciprocalWindowSizeUniform::std140_size_static() as u64,
-                        ),
+                        min_binding_size: Some(DoubleReciprocalWindowSizeUniform::min_size()),
                     },
                     count: None,
                 }],
