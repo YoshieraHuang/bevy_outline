@@ -2,12 +2,18 @@ use bevy::{
     input::mouse::{MouseMotion, MouseWheel},
     prelude::*,
 };
+use bevy_obj::ObjPlugin;
 use bevy_outline::{OutlineMaterial, OutlinePlugin};
 
 fn main() {
+    println!("Pan and Orbit Camera is enabled:
+    Mouse Right Button: Rotate,
+    Mouse Middle Button: Pan,
+    Mouse Wheel: Zoom.");
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
+        .add_plugin(ObjPlugin)
         .add_plugin(OutlinePlugin)
         .add_system(pan_orbit_camera)
         .add_startup_system(setup)
@@ -16,30 +22,68 @@ fn main() {
 
 fn setup(
     mut commands: Commands,
+    asset_server: Res<AssetServer>,
     mut ambient_light: ResMut<AmbientLight>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut outlines: ResMut<Assets<OutlineMaterial>>,
 ) {
-    let outline = outlines.add(OutlineMaterial {
-        width: 10.,
+    let outline_black = outlines.add(OutlineMaterial {
+        width: 5.,
         color: Color::rgba(0.0, 0.0, 0.0, 1.0),
     });
+
+    let outline_white = outlines.add(OutlineMaterial {
+        width: 3.,
+        color: Color::rgba(1.0, 1.0, 1.0, 1.0),
+    });
+
     // Cube
     commands
         .spawn_bundle(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube::default())),
             material: materials.add(Color::rgb(0.2, 0.7, 0.8).into()),
-            transform: Transform::from_xyz(0.0, 0.5, 0.0),
+            transform: Transform::from_xyz(2.0, 0.5, 0.0),
             ..default()
         })
-        .insert(outline);
+        .insert(outline_black.clone());
+
+    // Sphere
+    commands
+    .spawn_bundle(PbrBundle {
+        mesh: meshes.add(Mesh::from(shape::Icosphere::default())),
+        material: materials.add(Color::rgb(0.3, 0.2, 0.1).into()),
+        transform: Transform::from_xyz(-2.0, 0.5, 0.0),
+        ..default()
+    })
+    .insert(outline_white.clone());
+
+    // Torus
+    // The built-in torus has some mistakes which will be fixed in 0.8
+    commands
+    .spawn_bundle(PbrBundle {
+        mesh: asset_server.load("torus.obj"),
+        material: materials.add(Color::rgb(0.2, 0.2, 0.5).into()),
+        transform: Transform::from_xyz(6.0, 0.5, 0.0),
+        ..default()
+    })
+    .insert(outline_white.clone());
+
+    // Monkey head
+    commands
+    .spawn_bundle(PbrBundle {
+        mesh: asset_server.load("head.obj"),
+        material: materials.add(Color::rgb(0.7, 0.2, 0.5).into()),
+        transform: Transform::from_xyz(-6.0, 0.5, 0.0),
+        ..default()
+    })
+    .insert(outline_black.clone());
 
     // Light
     ambient_light.brightness = 1.0;
 
     // camera
-    let camera_translation = Vec3::new(-2.0, 2.5, 5.0);
+    let camera_translation = Vec3::new(0.0, 6.0, 12.0);
     let radius = camera_translation.length();
     commands
         .spawn_bundle(PerspectiveCameraBundle {

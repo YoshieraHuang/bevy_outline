@@ -52,10 +52,14 @@ fn setup(
 
 Note that the unit of `width` attribute of `OutlineMaterial` is **pixel**.
 
+## Demos
+
+See [`Example`](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1.0/examples)
+
 ## Problems
 
 - [x] ~~the width of outliner seems not to be uniform.~~
-- [ ] outline of built-in torus seems weird (Built-in torus has wrong normals)
+- [ ] outline of built-in torus seems weird (algorithm is wrong and will be fixed in 0.8)
 
 # Bevy Version Support
 
