@@ -1,9 +1,11 @@
+#![doc = include_str!("../README.md")]
+
 mod prepare;
 mod smooth_normal;
+mod window_size;
 
 use bevy::{
-    core::cast_slice,
-    core_pipeline::Transparent3d,
+    core_pipeline::Opaque3d,
     ecs::system::{
         lifetimeless::{Read, SQuery, SRes},
         SystemParamItem,
@@ -25,22 +27,29 @@ use bevy::{
         render_resource::{
             std140::{AsStd140, Std140},
             BindGroup, BindGroupDescriptor, BindGroupEntry, BindGroupLayout,
-            BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BlendState, Buffer,
+            BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BlendState,
             BufferBindingType, BufferDescriptor, BufferInitDescriptor, BufferSize, CompareFunction,
             DepthBiasState, DepthStencilState, Face, FragmentState, FrontFace, MultisampleState,
             PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor, ShaderStages,
             SpecializedMeshPipeline, SpecializedMeshPipelineError, SpecializedMeshPipelines,
             StencilFaceState, StencilState, TextureFormat, VertexState,
         },
-        renderer::{RenderDevice, RenderQueue},
+        renderer::RenderDevice,
         texture::BevyDefault,
         view::ExtractedView,
         RenderApp, RenderStage,
     },
 };
 use wgpu_types::{BufferUsages, ColorTargetState, ColorWrites, VertexFormat};
+use window_size::{DoubleReciprocalWindowSizeUniform, SetWindowSizeBindGroup};
 
-use crate::prepare::prepare_outline_mesh;
+use crate::{
+    prepare::prepare_outline_mesh,
+    window_size::{
+        extract_window_size, prepare_window_size, queue_window_size_bind_group,
+        DoubleReciprocalWindowSizeMeta,
+    },
+};
 
 macro_rules! load_internal_asset {
     ($app: ident, $handle: ident, $path_str: expr, $loader: expr) => {{
@@ -82,7 +91,7 @@ impl Plugin for OutlinePlugin {
 
         if let Ok(render_app) = app.get_sub_app_mut(RenderApp) {
             render_app
-                .add_render_command::<Transparent3d, DrawOutlines>()
+                .add_render_command::<Opaque3d, DrawOutlines>()
                 .insert_resource(DoubleReciprocalWindowSizeMeta {
                     buffer,
                     bind_group: None,
@@ -234,14 +243,14 @@ impl SpecializedMeshPipeline for OutlinePipeline {
             ATTRIBUTE_OUTLINE_NORMAL.at_shader_location(1),
         ];
 
+        let vertex_buffer_layout = layout.get_layout(&vertex_attributes)?;
+
         let bind_group_layout = vec![
             self.view_layout.clone(),
             self.mesh_layout.clone(),
             self.material_layout.clone(),
             self.window_size_layout.clone(),
         ];
-
-        let vertex_buffer_layout = layout.get_layout(&vertex_attributes)?;
 
         Ok(RenderPipelineDescriptor {
             vertex: VertexState {
@@ -256,7 +265,7 @@ impl SpecializedMeshPipeline for OutlinePipeline {
                 entry_point: "fragment".into(),
                 targets: vec![ColorTargetState {
                     format: TextureFormat::bevy_default(),
-                    blend: Some(BlendState::REPLACE),
+                    blend: Some(BlendState::ALPHA_BLENDING),
                     write_mask: ColorWrites::ALL,
                 }],
             }),
@@ -299,23 +308,23 @@ impl SpecializedMeshPipeline for OutlinePipeline {
 #[allow(clippy::too_many_arguments)]
 #[allow(clippy::type_complexity)]
 fn queue_outlines(
-    transparent_3d_draw_functions: Res<DrawFunctions<Transparent3d>>,
+    opaque_3d_draw_functions: Res<DrawFunctions<Opaque3d>>,
     render_meshes: Res<RenderAssets<Mesh>>,
     outline_pipeline: Res<OutlinePipeline>,
     mut pipelines: ResMut<SpecializedMeshPipelines<OutlinePipeline>>,
     mut pipeline_cache: ResMut<PipelineCache>,
     msaa: Res<Msaa>,
     material_meshes: Query<(Entity, &Handle<Mesh>, &MeshUniform), With<Handle<OutlineMaterial>>>,
-    mut views: Query<(&ExtractedView, &mut RenderPhase<Transparent3d>)>,
+    mut views: Query<(&ExtractedView, &mut RenderPhase<Opaque3d>)>,
 ) {
-    let draw_function = transparent_3d_draw_functions
+    let draw_function = opaque_3d_draw_functions
         .read()
         .get_id::<DrawOutlines>()
         .unwrap();
 
     let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples);
 
-    for (view, mut transparent_phase) in views.iter_mut() {
+    for (view, mut opaque_phase) in views.iter_mut() {
         let view_matrix = view.transform.compute_matrix();
         let view_row_2 = view_matrix.row(2);
 
@@ -332,7 +341,7 @@ fn queue_outlines(
                         return;
                     }
                 };
-                transparent_phase.add(Transparent3d {
+                opaque_phase.add(Opaque3d {
                     entity,
                     pipeline,
                     draw_function,
@@ -369,80 +378,4 @@ impl<const I: usize> EntityRenderCommand for SetOutlineMaterialBindGroup<I> {
         pass.set_bind_group(I, &material.bind_group, &[]);
         RenderCommandResult::Success
     }
-}
-
-pub struct SetWindowSizeBindGroup<const I: usize>;
-impl<const I: usize> EntityRenderCommand for SetWindowSizeBindGroup<I> {
-    type Param = SRes<DoubleReciprocalWindowSizeMeta>;
-
-    fn render<'w>(
-        _view: Entity,
-        _item: Entity,
-        window_size: SystemParamItem<'w, '_, Self::Param>,
-        pass: &mut TrackedRenderPass<'w>,
-    ) -> RenderCommandResult {
-        let window_size_bind_group = window_size.into_inner().bind_group.as_ref().unwrap();
-        pass.set_bind_group(I, window_size_bind_group, &[]);
-
-        RenderCommandResult::Success
-    }
-}
-
-pub struct ExtractedWindowSize {
-    width: f32,
-    height: f32,
-}
-
-#[derive(AsStd140)]
-pub struct DoubleReciprocalWindowSizeUniform {
-    size: Vec2,
-}
-
-pub struct DoubleReciprocalWindowSizeMeta {
-    buffer: Buffer,
-    bind_group: Option<BindGroup>,
-}
-
-fn extract_window_size(mut commands: Commands, windows: Res<Windows>) {
-    if windows.is_added() || windows.is_changed() {
-        let window = windows.get_primary().unwrap();
-        let width = window.width();
-        let height = window.height();
-        commands.insert_resource(ExtractedWindowSize { width, height });
-    }
-}
-
-fn prepare_window_size(
-    window_size: Res<ExtractedWindowSize>,
-    window_size_meta: ResMut<DoubleReciprocalWindowSizeMeta>,
-    render_queue: Res<RenderQueue>,
-) {
-    if window_size.is_added() || window_size.is_changed() || window_size_meta.is_changed() {
-        let window_size_uniform = DoubleReciprocalWindowSizeUniform {
-            size: Vec2::new(2.0 / window_size.width, 2.0 / window_size.height),
-        };
-        render_queue.write_buffer(
-            &window_size_meta.buffer,
-            0,
-            cast_slice(&[window_size_uniform.size]),
-        )
-    }
-}
-
-fn queue_window_size_bind_group(
-    render_device: Res<RenderDevice>,
-    mut double_reciprocal_window_size_meta: ResMut<DoubleReciprocalWindowSizeMeta>,
-    pipeline: Res<OutlinePipeline>,
-) {
-    let bind_group = render_device.create_bind_group(&BindGroupDescriptor {
-        label: Some("window size bind group"),
-        layout: &pipeline.window_size_layout,
-        entries: &[BindGroupEntry {
-            binding: 0,
-            resource: double_reciprocal_window_size_meta
-                .buffer
-                .as_entire_binding(),
-        }],
-    });
-    double_reciprocal_window_size_meta.bind_group = Some(bind_group);
 }

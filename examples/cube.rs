@@ -21,26 +21,30 @@ fn setup(
     mut materials: ResMut<Assets<StandardMaterial>>,
     mut outlines: ResMut<Assets<OutlineMaterial>>,
 ) {
-    let translation = Vec3::new(0.0, 0.5, 0.0);
-    let radius = translation.length();
-    // cube
+    let outline = outlines.add(OutlineMaterial {
+        width: 10.,
+        color: Color::rgba(0.0, 0.0, 0.0, 1.0),
+    });
+    // Cube
     commands
         .spawn_bundle(PbrBundle {
-            mesh: meshes.add(Mesh::from(shape::Cube { ..default() })),
-            material: materials.add(Color::rgb(0.8, 0.7, 0.6).into()),
-            transform: Transform::from_translation(translation),
+            mesh: meshes.add(Mesh::from(shape::Cube::default())),
+            material: materials.add(Color::rgb(0.2, 0.7, 0.8).into()),
+            transform: Transform::from_xyz(0.0, 0.5, 0.0),
             ..default()
         })
-        .insert(outlines.add(OutlineMaterial {
-            width: 5.,
-            color: Color::rgba(0.2, 0.3, 0.4, 1.0),
-        }));
-    // light
+        .insert(outline);
+
+    // Light
     ambient_light.brightness = 1.0;
+
     // camera
+    let camera_translation = Vec3::new(-2.0, 2.5, 5.0);
+    let radius = camera_translation.length();
     commands
         .spawn_bundle(PerspectiveCameraBundle {
-            transform: Transform::from_xyz(-2.0, 2.5, 5.0).looking_at(Vec3::ZERO, Vec3::Y),
+            transform: Transform::from_translation(camera_translation)
+                .looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         })
         .insert(PanOrbitCamera {
