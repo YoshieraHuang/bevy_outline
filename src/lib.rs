@@ -4,6 +4,9 @@ mod prepare;
 mod smooth_normal;
 mod window_size;
 
+#[cfg(feature = "picking")]
+pub mod picking;
+
 use bevy::{
     core_pipeline::core_3d::Opaque3d,
     ecs::system::{
@@ -63,7 +66,7 @@ pub const OUTLINE_SHADER_HANDLE: HandleUntyped =
 pub const ATTRIBUTE_OUTLINE_NORMAL: MeshVertexAttribute =
     MeshVertexAttribute::new("OutlineNormal", 9885409170, VertexFormat::Float32x3);
 
-#[derive(Debug, Default)]
+/// Plugin which enables outline shader
 pub struct OutlinePlugin;
 
 impl Plugin for OutlinePlugin {
@@ -360,7 +363,7 @@ type DrawOutlines = (
     DrawMesh,
 );
 
-pub struct SetOutlineMaterialBindGroup<const I: usize>;
+struct SetOutlineMaterialBindGroup<const I: usize>;
 impl<const I: usize> EntityRenderCommand for SetOutlineMaterialBindGroup<I> {
     type Param = (
         SRes<RenderAssets<OutlineMaterial>>,
