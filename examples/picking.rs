@@ -17,19 +17,21 @@ fn main() {
 }
 
 fn set_picking_outlines(mut commands: Commands, mut outlines: ResMut<Assets<OutlineMaterial>>) {
+    // Comment below to disable hover outline
     commands.insert_resource(HoverOutline(outlines.add(OutlineMaterial {
         width: 5.,
         color: Color::BLACK,
     })));
-    commands.insert_resource(SelectedOutline(OutlineMaterial {
+    // Comment below to disable selected outline
+    commands.insert_resource(SelectedOutline(outlines.add(OutlineMaterial {
         width: 5.,
         color: Color::WHITE,
-    }));
-    // Uncomment below to enable pressed outline
-    // commands.insert_resource(SelectedOutline(OutlineMaterial {
-    //     width: 5.,
-    //     color: Color::WHITE,
-    // }));
+    })));
+    // Comment below to disable pressed outline
+    commands.insert_resource(PressedOutline(outlines.add(OutlineMaterial {
+        width: 5.,
+        color: Color::BLUE,
+    })));
 }
 
 fn setup(
