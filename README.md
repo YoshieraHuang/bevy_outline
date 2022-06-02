@@ -6,7 +6,8 @@ A easy-use pixel-perfect outline shader for bevy using vertex extrusion method. 
 
 - [x] Pixel perfect: the width of drawn outline is in pixel unit and the same as what we want.
 - [x] Eliminate foreshortening: the width of outline is uniform from near view to far view.
-- [x] Customizability. Width and color can be determined by user.  
+- [x] Customizability. Width and color can be determined by user.
+- [x] Integration with `bevy_mod_picking`.
 
 ## Usage
 
@@ -14,7 +15,7 @@ First, add `bevy_outline` as a dependency into your `Cargo.toml`:
 
 ```toml
 [dependencies]
-bevy_outline = "0.1.0"
+bevy_outline = "0.1"
 ```
 
 Second, add `OutlinePlugin` into your app add set `Msaa` to a reasonable value:
@@ -52,9 +53,18 @@ fn setup(
 
 Note that the unit of `width` attribute of `OutlineMaterial` is **pixel**.
 
+## Work with `bevy_mod_picking`
+
+The initial motivation of this crate is to enable outlining instead of material substitution when a mesh is picked by `bevy_mod_picking`.
+Use this functionality is very simple:
+- enable the `picking` feature of this crate.
+- add `picking::DefaultPickingPlugins` in **this** crate to your application.
+- set the associated resource like `HoverOutline`, `SelectedOutline` and `PressedOutline` to enable the outlining when hovered, selected and pressed.
+See [this example](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1/examples/picking.rs) for demo.
+
 ## Demos
 
-See [`Example`](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1/examples)
+See [example folder](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1/examples)
 
 ## Problems
 

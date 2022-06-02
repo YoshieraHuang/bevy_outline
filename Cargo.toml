@@ -3,7 +3,7 @@ name = "bevy_outline"
 description = "Pixel-Perfect Outline Shader for Bevy"
 homepage = "https://github.com/YoshieraHuang/bevy_outline"
 repository = "https://github.com/YoshieraHuang/bevy_outline"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 license = "MIT"
 keywords = ["bevy", "shader"]
@@ -19,7 +19,21 @@ bevy = { version = "0.7", default-features = false, features = [
 ]}
 wgpu-types = "0.12.0"
 ordered-float = "2.0"
+bevy_mod_picking = { version = "0.6", optional = true }
+
+[features]
+default = [ ]
+picking = [ "bevy_mod_picking" ]
 
 [dev-dependencies]
 bevy = { version = "0.7", features = [ "dynamic" ]}
 bevy_obj = "0.7.0"
+
+[[example]]
+name = "scene"
+path = "examples/scene.rs"
+
+[[example]]
+name = "picking"
+path = "examples/picking.rs"
+required-features = [ "picking" ]
