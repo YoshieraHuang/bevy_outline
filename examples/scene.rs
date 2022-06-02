@@ -6,10 +6,12 @@ use bevy_obj::ObjPlugin;
 use bevy_outline::{OutlineMaterial, OutlinePlugin};
 
 fn main() {
-    println!("Pan and Orbit Camera is enabled:
+    println!(
+        "Pan and Orbit Camera is enabled:
     Mouse Right Button: Rotate,
     Mouse Middle Button: Pan,
-    Mouse Wheel: Zoom.");
+    Mouse Wheel: Zoom."
+    );
     App::new()
         .insert_resource(Msaa { samples: 4 })
         .add_plugins(DefaultPlugins)
@@ -50,34 +52,34 @@ fn setup(
 
     // Sphere
     commands
-    .spawn_bundle(PbrBundle {
-        mesh: meshes.add(Mesh::from(shape::Icosphere::default())),
-        material: materials.add(Color::rgb(0.3, 0.2, 0.1).into()),
-        transform: Transform::from_xyz(-2.0, 0.5, 0.0),
-        ..default()
-    })
-    .insert(outline_white.clone());
+        .spawn_bundle(PbrBundle {
+            mesh: meshes.add(Mesh::from(shape::Icosphere::default())),
+            material: materials.add(Color::rgb(0.3, 0.2, 0.1).into()),
+            transform: Transform::from_xyz(-2.0, 0.5, 0.0),
+            ..default()
+        })
+        .insert(outline_white.clone());
 
     // Torus
     // The built-in torus has some mistakes which will be fixed in 0.8
     commands
-    .spawn_bundle(PbrBundle {
-        mesh: asset_server.load("torus.obj"),
-        material: materials.add(Color::rgb(0.2, 0.2, 0.5).into()),
-        transform: Transform::from_xyz(6.0, 0.5, 0.0),
-        ..default()
-    })
-    .insert(outline_white.clone());
+        .spawn_bundle(PbrBundle {
+            mesh: asset_server.load("torus.obj"),
+            material: materials.add(Color::rgb(0.2, 0.2, 0.5).into()),
+            transform: Transform::from_xyz(6.0, 0.5, 0.0),
+            ..default()
+        })
+        .insert(outline_white.clone());
 
     // Monkey head
     commands
-    .spawn_bundle(PbrBundle {
-        mesh: asset_server.load("head.obj"),
-        material: materials.add(Color::rgb(0.7, 0.2, 0.5).into()),
-        transform: Transform::from_xyz(-6.0, 0.5, 0.0),
-        ..default()
-    })
-    .insert(outline_black.clone());
+        .spawn_bundle(PbrBundle {
+            mesh: asset_server.load("head.obj"),
+            material: materials.add(Color::rgb(0.7, 0.2, 0.5).into()),
+            transform: Transform::from_xyz(-6.0, 0.5, 0.0),
+            ..default()
+        })
+        .insert(outline_black.clone());
 
     // Light
     ambient_light.brightness = 1.0;
