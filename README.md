@@ -54,7 +54,7 @@ Note that the unit of `width` attribute of `OutlineMaterial` is **pixel**.
 
 ## Demos
 
-See [`Example`](https://github.com/YoshieraHuang/bevy_outline/tree/master/examples)
+See [`Example`](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1/examples)
 
 ## Problems
 
