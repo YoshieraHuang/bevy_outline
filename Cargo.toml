@@ -18,7 +18,6 @@ bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-fe
     "bevy_pbr"
 ]}
 wgpu-types = "0.12.0"
-ordered-float = "2.0"
 bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking", branch = "main", optional = true }
 
 [features]

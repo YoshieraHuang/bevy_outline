@@ -17,6 +17,7 @@ fn main() {
 }
 
 fn set_picking_outlines(mut commands: Commands, mut outlines: ResMut<Assets<OutlineMaterial>>) {
+    // Comment below to disable hover outline
     commands.insert_resource(HoverOutline(outlines.add(OutlineMaterial {
         width: 5.,
         color: Color::BLACK,

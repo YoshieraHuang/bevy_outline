@@ -267,7 +267,7 @@ impl SpecializedMeshPipeline for OutlinePipeline {
                 entry_point: "fragment".into(),
                 targets: vec![ColorTargetState {
                     format: TextureFormat::bevy_default(),
-                    blend: Some(BlendState::ALPHA_BLENDING),
+                    blend: Some(BlendState::REPLACE),
                     write_mask: ColorWrites::ALL,
                 }],
             }),
@@ -283,7 +283,7 @@ impl SpecializedMeshPipeline for OutlinePipeline {
             },
             depth_stencil: Some(DepthStencilState {
                 format: TextureFormat::Depth32Float,
-                depth_write_enabled: false,
+                depth_write_enabled: true,
                 depth_compare: CompareFunction::Greater,
                 stencil: StencilState {
                     front: StencilFaceState::IGNORE,
@@ -327,8 +327,8 @@ fn queue_outlines(
     let msaa_key = MeshPipelineKey::from_msaa_samples(msaa.samples);
 
     for (view, mut opaque_phase) in views.iter_mut() {
-        let view_matrix = view.transform.compute_matrix();
-        let view_row_2 = view_matrix.row(2);
+        let inverse_view_matrix = view.transform.compute_matrix().inverse();
+        let view_row_2 = inverse_view_matrix.row(2);
 
         for (entity, mesh_handle, mesh_uniform) in material_meshes.iter() {
             if let Some(mesh) = render_meshes.get(mesh_handle) {
@@ -343,11 +343,13 @@ fn queue_outlines(
                         return;
                     }
                 };
+                // Follow the Opaque3d distance calculation.
+                let distance = -view_row_2.dot(mesh_uniform.transform.col(3)) + 0.0001;
                 opaque_phase.add(Opaque3d {
                     entity,
                     pipeline,
                     draw_function,
-                    distance: view_row_2.dot(mesh_uniform.transform.col(3)),
+                    distance,
                 })
             }
         }
