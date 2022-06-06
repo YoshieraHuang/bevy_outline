@@ -1,32 +1,32 @@
 use std::hash::Hash;
 
 use bevy::{
+    core::FloatOrd,
     math::Vec3A,
     prelude::{Deref, DerefMut},
     render::mesh::{Mesh, VertexAttributeValues},
     utils::HashMap,
 };
-use ordered_float::OrderedFloat;
 
 /// An ordered float3 array which implements Eq and Hash
 #[derive(Debug, Clone, Copy, Deref, DerefMut, Default)]
 #[repr(transparent)]
-struct OrderedFloat3([f32; 3]);
+struct Float3Ord([f32; 3]);
 
-impl PartialEq for OrderedFloat3 {
+impl PartialEq for Float3Ord {
     fn eq(&self, other: &Self) -> bool {
-        OrderedFloat(self[0]).eq(&OrderedFloat(other[0]))
-            && OrderedFloat(self[1]).eq(&OrderedFloat(other[1]))
-            && OrderedFloat(self[2]).eq(&OrderedFloat(other[2]))
+        FloatOrd(self[0]).eq(&FloatOrd(other[0]))
+            && FloatOrd(self[1]).eq(&FloatOrd(other[1]))
+            && FloatOrd(self[2]).eq(&FloatOrd(other[2]))
     }
 }
-impl Eq for OrderedFloat3 {}
+impl Eq for Float3Ord {}
 
-impl Hash for OrderedFloat3 {
+impl Hash for Float3Ord {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
-        OrderedFloat(self[0]).hash(state);
-        OrderedFloat(self[1]).hash(state);
-        OrderedFloat(self[2]).hash(state);
+        FloatOrd(self[0]).hash(state);
+        FloatOrd(self[1]).hash(state);
+        FloatOrd(self[2]).hash(state);
     }
 }
 
@@ -41,7 +41,7 @@ pub(crate) fn smooth_normal(mesh: &Mesh) -> VertexAttributeValues {
         .zip(v_normals.iter())
         .enumerate()
         .for_each(|(index, (pos, normal))| {
-            let key = OrderedFloat3(*pos);
+            let key = Float3Ord(*pos);
             let entry = normals_map.entry(key).or_insert((vec![], Vec3A::ZERO));
             entry.0.push(index);
             entry.1 += Vec3A::from(*normal);
