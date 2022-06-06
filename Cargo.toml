@@ -18,7 +18,7 @@ bevy = { version = "0.7", default-features = false, features = [
     "bevy_pbr",
 ]}
 wgpu-types = "0.12.0"
-bevy_mod_picking = { path = "../bevy_mod_picking", optional = true }
+bevy_mod_picking = { version = "0.6", optional = true }
 
 [features]
 default = [ ]
