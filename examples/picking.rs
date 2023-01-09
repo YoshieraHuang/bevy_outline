@@ -1,9 +1,10 @@
 use bevy::prelude::*;
-use bevy_mod_picking::{
-    PickableBundle, PickingCameraBundle,
-};
+use bevy_mod_picking::{PickableBundle, PickingCameraBundle};
 // use bevy_obj::ObjPlugin;
-use bevy_outline::{picking::{DefaultPickingPlugins, HoverOutline, PressedOutline, SelectedOutline}, OutlineMaterial};
+use bevy_outline::{
+    picking::{DefaultPickingPlugins, HoverOutline, PressedOutline, SelectedOutline},
+    OutlineMaterial,
+};
 
 fn main() {
     App::new()

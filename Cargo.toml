@@ -17,7 +17,7 @@ bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", default-fe
     "bevy_core_pipeline",
     "bevy_pbr"
 ]}
-wgpu-types = "0.12.0"
+wgpu-types = "0.14.1"
 bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking", branch = "main", optional = true }
 
 [features]
@@ -26,7 +26,6 @@ picking = [ "bevy_mod_picking" ]
 
 [dev-dependencies]
 bevy = { git = "https://github.com/bevyengine/bevy", branch = "main", features = [ "dynamic" ]}
-# bevy_obj = "0.7.0"
 
 [[example]]
 name = "scene"

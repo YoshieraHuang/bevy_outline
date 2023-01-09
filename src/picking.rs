@@ -4,11 +4,12 @@ use bevy::{
     app::PluginGroupBuilder,
     ecs::{schedule::ShouldRun, system::EntityCommands},
     prelude::{
-        App, Changed, Commands, CoreStage, Deref, Entity, Handle, Or,
-        ParallelSystemDescriptorCoercion, Plugin, PluginGroup, Query, Res, SystemSet,
+        App, Changed, Commands, CoreStage, Deref, Entity, Handle, Or, Plugin, PluginGroup, Query,
+        Res, SystemSet,
     },
     ui::Interaction,
 };
+
 use bevy_mod_picking::{
     InteractablePickingPlugin, PausedForBlockers, PickingPlugin, PickingPluginsState,
     PickingSystem, Selection,
