@@ -2,33 +2,33 @@
 #import bevy_pbr::mesh_view_bindings
 
 struct Vertex {
-    [[location(0)]] position: vec3<f32>;
-    [[location(1)]] normal: vec3<f32>;
+    @location(0) position: vec3<f32>,
+    @location(1) normal: vec3<f32>,
 };
 
 struct VertexOutput {
-    [[builtin(position)]] clip_position: vec4<f32>;
+    @builtin(position) clip_position: vec4<f32>,
 };
 
-[[group(1), binding(0)]]
+@group(1) @binding(0)
 var<uniform> mesh: Mesh;
 
 struct OutlineMat {
-    width: f32;
-    color: vec4<f32>;
+    width: f32,
+    color: vec4<f32>,
 };
 
-[[group(2), binding(0)]]
+@group(2) @binding(0)
 var<uniform> outline_mat: OutlineMat;
 
 struct DoubleReciprocalWindowSize {
-    size: vec2<f32>;
+    size: vec2<f32>,
 };
 
-[[group(3), binding(0)]]
+@group(3) @binding(0)
 var<uniform> window_size: DoubleReciprocalWindowSize;
 
-[[stage(vertex)]]
+@vertex
 fn vertex(vertex: Vertex) -> VertexOutput {
     let mvp = view.view_proj * mesh.model;
     let clip_position = mvp * vec4<f32>(vertex.position, 1.0);
@@ -39,7 +39,7 @@ fn vertex(vertex: Vertex) -> VertexOutput {
     return out;
 }
 
-[[stage(fragment)]]
-fn fragment() -> [[location(0)]] vec4<f32> {
+@fragment
+fn fragment() -> @location(0) vec4<f32> {
     return outline_mat.color;
 }

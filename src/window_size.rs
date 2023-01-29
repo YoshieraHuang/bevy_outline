@@ -2,17 +2,19 @@ use bevy::{
     core::cast_slice,
     ecs::system::{lifetimeless::SRes, SystemParamItem},
     math::Vec2,
-    prelude::{Commands, Entity, EventReader, Res, ResMut},
+    prelude::{Commands, Entity, EventReader, Res, ResMut, Resource},
     render::{
         render_phase::{EntityRenderCommand, RenderCommandResult, TrackedRenderPass},
         render_resource::{BindGroup, BindGroupDescriptor, BindGroupEntry, Buffer, ShaderType},
         renderer::{RenderDevice, RenderQueue},
+        Extract,
     },
     window::WindowResized,
 };
 
 use crate::OutlinePipeline;
 
+#[derive(Resource)]
 pub(crate) struct ExtractedWindowSize {
     width: f32,
     height: f32,
@@ -23,6 +25,7 @@ pub(crate) struct DoubleReciprocalWindowSizeUniform {
     size: Vec2,
 }
 
+#[derive(Resource)]
 pub(crate) struct DoubleReciprocalWindowSizeMeta {
     pub buffer: Buffer,
     pub bind_group: Option<BindGroup>,
@@ -30,7 +33,7 @@ pub(crate) struct DoubleReciprocalWindowSizeMeta {
 
 pub(crate) fn extract_window_size(
     mut commands: Commands,
-    mut resized_events: EventReader<WindowResized>,
+    mut resized_events: Extract<EventReader<WindowResized>>,
 ) {
     if let Some(size_change) = resized_events.iter().last() {
         if size_change.id.is_primary() {

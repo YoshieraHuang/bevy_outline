@@ -7,6 +7,8 @@ mod window_size;
 #[cfg(feature = "picking")]
 pub mod picking;
 
+use std::mem::size_of;
+
 use bevy::{
     core_pipeline::core_3d::Opaque3d,
     ecs::system::{
@@ -32,8 +34,8 @@ use bevy::{
             BindGroupLayoutDescriptor, BindGroupLayoutEntry, BindingType, BlendState,
             BufferBindingType, BufferDescriptor, BufferInitDescriptor, CompareFunction,
             DepthBiasState, DepthStencilState, Face, FragmentState, FrontFace, MultisampleState,
-            PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor, ShaderSize,
-            ShaderStages, ShaderType, SpecializedMeshPipeline, SpecializedMeshPipelineError,
+            PipelineCache, PolygonMode, PrimitiveState, RenderPipelineDescriptor, ShaderStages,
+            ShaderType, SpecializedMeshPipeline, SpecializedMeshPipelineError,
             SpecializedMeshPipelines, StencilFaceState, StencilState, TextureFormat, VertexState,
         },
         renderer::RenderDevice,
@@ -81,7 +83,7 @@ impl Plugin for OutlinePlugin {
         let render_device = app.world.resource::<RenderDevice>();
         let buffer = render_device.create_buffer(&BufferDescriptor {
             label: Some("window size uniform buffer"),
-            size: DoubleReciprocalWindowSizeUniform::SIZE.get(),
+            size: size_of::<DoubleReciprocalWindowSizeUniform>() as u64,
             usage: BufferUsages::UNIFORM | BufferUsages::COPY_DST,
             mapped_at_creation: false,
         });
@@ -143,7 +145,7 @@ impl RenderAsset for OutlineMaterial {
             color: extracted_asset.color.as_linear_rgba_f32().into(),
         };
 
-        let byte_buffer = [0u8; OutlineMaterialUniform::SIZE.get() as usize];
+        let byte_buffer = [0u8; size_of::<OutlineMaterialUniform>()];
         let mut buffer = encase::UniformBuffer::new(byte_buffer);
         buffer.write(&uniform).unwrap();
 
@@ -165,6 +167,7 @@ impl RenderAsset for OutlineMaterial {
     }
 }
 
+#[derive(Resource)]
 pub struct OutlinePipeline {
     pub mesh_layout: BindGroupLayout,
     pub view_layout: BindGroupLayout,
@@ -265,11 +268,11 @@ impl SpecializedMeshPipeline for OutlinePipeline {
                 shader: OUTLINE_SHADER_HANDLE.typed::<Shader>(),
                 shader_defs: vec![],
                 entry_point: "fragment".into(),
-                targets: vec![ColorTargetState {
+                targets: vec![Some(ColorTargetState {
                     format: TextureFormat::bevy_default(),
                     blend: Some(BlendState::REPLACE),
                     write_mask: ColorWrites::ALL,
-                }],
+                })],
             }),
             layout: Some(bind_group_layout),
             primitive: PrimitiveState {
