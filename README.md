@@ -70,7 +70,7 @@ See [example folder](https://github.com/YoshieraHuang/bevy_outline/tree/v0.1/exa
 
 - [x] ~~the width of outliner seems not to be uniform.~~
 - [x] ~~outline of built-in torus seems weird (algorithm is wrong and will be fixed in 0.8)~~
-- [ ] Pan + Orbit camera in example does not work with `main` branch
+- [x] ~~Pan + Orbit camera in example does not work with `main` branch~~
 
 # Bevy Version Support
 
@@ -79,6 +79,7 @@ I intend to track the `main` branch of Bevy. PRs supporting this are welcome!
 |bevy|bevy_outline|
 |---|---|
 |0.7|0.1|
+|0.9.1|0.2|
 
 # License
 

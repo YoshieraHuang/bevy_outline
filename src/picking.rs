@@ -4,8 +4,8 @@ use bevy::{
     app::PluginGroupBuilder,
     ecs::{schedule::ShouldRun, system::EntityCommands},
     prelude::{
-        App, Changed, Commands, CoreStage, Deref, Entity, Handle, Or, Plugin, PluginGroup, Query,
-        Res, SystemSet,
+        App, Changed, Commands, CoreStage, Deref, Entity, Handle, IntoSystemDescriptor, Or, Plugin,
+        PluginGroup, Query, Res, Resource, SystemSet,
     },
     ui::Interaction,
 };
@@ -21,27 +21,28 @@ use crate::{OutlineMaterial, OutlinePlugin};
 /// Object get outlined instead of changing materials when hovered, clicked or selected.
 pub struct DefaultPickingPlugins;
 impl PluginGroup for DefaultPickingPlugins {
-    fn build(&mut self, group: &mut PluginGroupBuilder) {
-        group.add(PickingPlugin);
-        group.add(InteractablePickingPlugin);
-        group.add(OutlinePlugin);
-        group.add(OutlinePickingPlugin);
+    fn build(self) -> PluginGroupBuilder {
+        PluginGroupBuilder::start::<Self>()
+            .add(PickingPlugin)
+            .add(InteractablePickingPlugin)
+            .add(OutlinePlugin)
+            .add(OutlinePickingPlugin)
     }
 }
 
 /// `OutlineMaterial` handle resource used when object is hovered.
 /// If this resource does not exist in world, no outline will show.
-#[derive(Deref)]
+#[derive(Deref, Resource)]
 pub struct HoverOutline(pub Handle<OutlineMaterial>);
 
 /// `OutlineMaterial` handle resource used when object is selected.
 /// If this resource does not exist in world, no outline will show.
-#[derive(Deref)]
+#[derive(Deref, Resource)]
 pub struct SelectedOutline(pub Handle<OutlineMaterial>);
 
 /// `OutlineMaterial` handle resource used when object is pressed or clicked.
 /// If this resource does not exist in world, no outline will show.
-#[derive(Deref)]
+#[derive(Deref, Resource)]
 pub struct PressedOutline(pub Handle<OutlineMaterial>);
 
 /// Outline picking plugin as an alternative to `HighlightablePickingPlugin` in `bevy_mod_picking`
@@ -119,7 +120,9 @@ fn mesh_highlighting(
 }
 
 #[inline]
-fn set_outline<T: Deref<Target = Handle<OutlineMaterial>> + Send + Sync + 'static>(
+fn set_outline<
+    T: Deref<Target = Handle<OutlineMaterial>> + Send + Sync + 'static + bevy::prelude::Resource,
+>(
     entity_commands: &mut EntityCommands,
     outline: &Option<Res<T>>,
 ) {
