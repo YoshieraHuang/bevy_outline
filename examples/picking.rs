@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use bevy_mod_picking::{PickableBundle, PickingCameraBundle};
 // use bevy_obj::ObjPlugin;
 use bevy_outline::{
-    picking::{DefaultPickingPlugins, HoverOutline, PressedOutline, SelectedOutline},
+    picking::{DefaultPickingPlugins, HoverOutline, SelectedOutline},
     OutlineMaterial,
 };
 
@@ -36,51 +36,51 @@ fn set_picking_outlines(mut commands: Commands, mut outlines: ResMut<Assets<Outl
 
 fn setup(
     mut commands: Commands,
-    asset_server: Res<AssetServer>,
+    // asset_server: Res<AssetServer>, // Uncomment this to spawn Monkey head
     mut ambient_light: ResMut<AmbientLight>,
     mut meshes: ResMut<Assets<Mesh>>,
     mut materials: ResMut<Assets<StandardMaterial>>,
 ) {
     // Cube
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube::default())),
             material: materials.add(Color::rgb(0.2, 0.7, 0.8).into()),
             transform: Transform::from_xyz(2.0, 0.5, 0.0),
             ..default()
         })
-        .insert_bundle(PickableBundle::default());
+        .insert(PickableBundle::default());
 
     // Sphere
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Icosphere::default())),
             material: materials.add(Color::rgb(0.3, 0.2, 0.1).into()),
             transform: Transform::from_xyz(-2.0, 0.5, 0.0),
             ..default()
         })
-        .insert_bundle(PickableBundle::default());
+        .insert(PickableBundle::default());
 
     // Torus
     // The built-in torus has some mistakes which will be fixed in 0.8
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Torus::default())),
             material: materials.add(Color::rgb(0.2, 0.2, 0.5).into()),
             transform: Transform::from_xyz(6.0, 0.5, 0.0),
             ..default()
         })
-        .insert_bundle(PickableBundle::default());
+        .insert(PickableBundle::default());
 
     // Monkey head
     // commands
-    //     .spawn_bundle(PbrBundle {
+    //     .spawn(PbrBundle {
     //         mesh: asset_server.load("head.obj"),
     //         material: materials.add(Color::rgb(0.7, 0.2, 0.5).into()),
     //         transform: Transform::from_xyz(-6.0, 0.5, 0.0),
     //         ..default()
     //     })
-    //     .insert_bundle(PickableBundle::default());
+    //     .insert(PickableBundle::default());
 
     // Light
     ambient_light.brightness = 1.0;
@@ -88,10 +88,10 @@ fn setup(
     // camera
     let camera_translation = Vec3::new(0.0, 6.0, 12.0);
     commands
-        .spawn_bundle(Camera3dBundle {
+        .spawn(Camera3dBundle {
             transform: Transform::from_translation(camera_translation)
                 .looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
         })
-        .insert_bundle(PickingCameraBundle::default());
+        .insert(PickingCameraBundle::default());
 }

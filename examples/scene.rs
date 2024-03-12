@@ -44,7 +44,7 @@ fn setup(
 
     // Cube
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Cube::default())),
             material: materials.add(Color::rgb(0.2, 0.7, 0.8).into()),
             transform: Transform::from_xyz(2.0, 0.5, 0.0),
@@ -54,7 +54,7 @@ fn setup(
 
     // Sphere
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Icosphere::default())),
             material: materials.add(Color::rgb(0.3, 0.2, 0.1).into()),
             transform: Transform::from_xyz(-2.0, 0.5, 0.0),
@@ -64,7 +64,7 @@ fn setup(
 
     // Torus
     commands
-        .spawn_bundle(PbrBundle {
+        .spawn(PbrBundle {
             mesh: meshes.add(Mesh::from(shape::Torus::default())),
             material: materials.add(Color::rgb(0.2, 0.2, 0.5).into()),
             transform: Transform::from_xyz(6.0, 0.5, 0.0),
@@ -89,7 +89,7 @@ fn setup(
     let camera_translation = Vec3::new(0.0, 6.0, 12.0);
     let radius = camera_translation.length();
     commands
-        .spawn_bundle(Camera3dBundle {
+        .spawn(Camera3dBundle {
             transform: Transform::from_translation(camera_translation)
                 .looking_at(Vec3::ZERO, Vec3::Y),
             ..default()
@@ -125,7 +125,7 @@ fn pan_orbit_camera(
     mut ev_motion: EventReader<MouseMotion>,
     mut ev_scroll: EventReader<MouseWheel>,
     input_mouse: Res<Input<MouseButton>>,
-    mut query: Query<(&mut PanOrbitCamera, &mut Transform, &PerspectiveProjection)>,
+    mut query: Query<(&mut PanOrbitCamera, &mut Transform, &Projection)>,
 ) {
     // change input mapping for orbit and panning here
     let orbit_button = MouseButton::Right;
@@ -182,7 +182,9 @@ fn pan_orbit_camera(
             any = true;
             // make panning distance independent of resolution and FOV,
             let window = get_primary_window_size(&windows);
-            pan *= Vec2::new(projection.fov * projection.aspect_ratio, projection.fov) / window;
+            if let Projection::Perspective(projection) = projection {
+                pan *= Vec2::new(projection.fov * projection.aspect_ratio, projection.fov) / window;
+            }
             // translate by local axes
             let right = transform.rotation * Vec3::X * -pan.x;
             let up = transform.rotation * Vec3::Y * pan.y;

@@ -18,7 +18,7 @@ bevy = { version = "0.9.1", features = [
     "bevy_pbr"
 ]}
 wgpu-types = "0.14.1"
-bevy_mod_picking = { git = "https://github.com/aevyrie/bevy_mod_picking", optional = true }
+bevy_mod_picking = { version = "0.11", optional = true }
 
 [features]
 default = [ ]
